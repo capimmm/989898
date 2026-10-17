@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>eo-jogo-</title>
-  <meta name="theme-color" content="#04050a" />
+  <title>capim | cards</title>
+  <meta name="theme-color" content="#f4fdf6" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       RESET
+       RESET & SELEÇÃO AZUL
     ============================================================ */
     *, *::before, *::after {
       box-sizing: border-box;
@@ -18,42 +18,66 @@
       padding: 0;
     }
 
-    html {
-      color-scheme: dark;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    /* ============================================================
-       SELEÇÃO AZUL
-    ============================================================ */
     ::selection {
       background: #3b82f6;
       color: #ffffff;
       -webkit-text-fill-color: #ffffff;
     }
-    ::-moz-selection {
-      background: #3b82f6;
-      color: #ffffff;
-    }
 
     /* ============================================================
-       SISTEMA DE ESCALA FLUIDA
+       VARIÁVEIS DE TEMA (LIGHT / DARK)
     ============================================================ */
     :root {
-      --bg: #04050a;
-      --text: #f4f6fb;
-      --text-dim: #8a92a8;
-      --border: rgba(255, 255, 255, 0.07);
+      --bg: #f4fdf6;
+      --text: #111827;
+      --text-dim: #6b7280;
+      --border: rgba(0, 0, 0, 0.08);
+      --glass: rgba(255, 255, 255, 0.65);
+      --card-border: rgba(255, 255, 255, 0.8);
+      --accent: #4ade80;
+      --hotbar-bg: rgba(255, 255, 255, 0.8);
+      --hotbar-border: rgba(255, 255, 255, 1);
+      --hotbar-hover: rgba(0, 0, 0, 0.05);
+      --modal-bg: #ffffff;
+      --shadow-color: rgba(0, 0, 0, 0.05);
+      --num-stroke: rgba(0, 0, 0, 0.04);
+      --num-stroke-hover: rgba(74, 222, 128, 0.4);
+      --watermark: rgba(0, 0, 0, 0.02);
+      --grid-line: rgba(0, 0, 0, 0.03);
+      --blob-opacity: 0.6;
 
-      --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
 
       --u: clamp(13px, 0.7vw + 10px, 18px);
-
-      --radius:   calc(var(--u) * 1.5);
+      --radius: calc(var(--u) * 1.5);
       --radius-s: calc(var(--u) * 0.9);
-
       --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #050505;
+      --text: #f3f4f6;
+      --text-dim: #9ca3af;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass: rgba(20, 20, 20, 0.65);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #4ade80;
+      --hotbar-bg: rgba(20, 20, 20, 0.8);
+      --hotbar-border: rgba(255, 255, 255, 0.1);
+      --hotbar-hover: rgba(255, 255, 255, 0.1);
+      --modal-bg: #1f2937;
+      --shadow-color: rgba(0, 0, 0, 0.5);
+      --num-stroke: rgba(255, 255, 255, 0.06);
+      --num-stroke-hover: rgba(74, 222, 128, 0.6);
+      --watermark: rgba(255, 255, 255, 0.02);
+      --grid-line: rgba(255, 255, 255, 0.04);
+      --blob-opacity: 0.15;
+    }
+
+    /* Transições Globais */
+    body, .card, .hotbar, .modal-content, .bg-blob, .bg-grid-lines, .bg-watermark, .card-file, .card-icon, .hotbar-btn {
+      transition: background-color 0.6s ease, color 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
     }
 
     html, body { min-height: 100%; }
@@ -62,13 +86,11 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
-      font-size: 16px;
-      line-height: 1.5;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      display: grid;
-      place-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       min-height: 100vh;
       min-height: 100dvh;
       padding: clamp(20px, 4vw, 56px);
@@ -76,160 +98,84 @@
     }
 
     /* ============================================================
-       BACKGROUND — MONOCROMÁTICO (8 camadas)
+       BACKGROUND MELHORADO
     ============================================================ */
-
-    /* 1. BASE */
-    .bg-base {
+    body::after {
+      content: "";
       position: fixed;
       inset: 0;
-      z-index: -8;
-      background:
-        radial-gradient(ellipse 110% 80% at 50% -20%, #0c0d10 0%, transparent 60%),
-        radial-gradient(ellipse 90% 60% at 50% 120%, #08090c 0%, transparent 60%),
-        #04050a;
-    }
-
-    /* 2. AURORA — névoa branca/cinza */
-    .bg-aurora {
-      position: fixed;
-      inset: 0;
-      z-index: -7;
-      overflow: hidden;
+      z-index: -1;
       pointer-events: none;
-      filter: blur(70px);
-      opacity: 0.9;
-      transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
-      will-change: transform;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      will-change: transform;
-    }
-    .blob-1 {
-      width: 58vmax; height: 58vmax;
-      top: -20vmax; left: -20vmax;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 65%);
-      animation: drift1 30s ease-in-out infinite alternate;
-    }
-    .blob-2 {
-      width: 52vmax; height: 52vmax;
-      bottom: -20vmax; right: -20vmax;
-      background: radial-gradient(circle, rgba(210, 210, 210, 0.11), transparent 65%);
-      animation: drift2 34s ease-in-out infinite alternate;
-    }
-    .blob-3 {
-      width: 44vmax; height: 44vmax;
-      top: 30%; left: 40%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.09), transparent 65%);
-      animation: drift3 38s ease-in-out infinite alternate;
-    }
-    .blob-4 {
-      width: 40vmax; height: 40vmax;
-      top: 55%; left: 5%;
-      background: radial-gradient(circle, rgba(170, 170, 170, 0.08), transparent 65%);
-      animation: drift4 32s ease-in-out infinite alternate;
-    }
-
-    @keyframes drift1 {
-      0%   { transform: translate(0, 0) scale(1); }
-      50%  { transform: translate(10vmax, 8vmax) scale(1.1); }
-      100% { transform: translate(-5vmax, 15vmax) scale(0.95); }
-    }
-    @keyframes drift2 {
-      0%   { transform: translate(0, 0) scale(1.05); }
-      50%  { transform: translate(-12vmax, -8vmax) scale(0.95); }
-      100% { transform: translate(6vmax, -14vmax) scale(1.1); }
-    }
-    @keyframes drift3 {
-      0%   { transform: translate(0, 0) scale(1); }
-      50%  { transform: translate(-14vmax, 10vmax) scale(1.15); }
-      100% { transform: translate(12vmax, -6vmax) scale(0.9); }
-    }
-    @keyframes drift4 {
-      0%   { transform: translate(0, 0) scale(1); }
-      50%  { transform: translate(16vmax, -10vmax) scale(1.1); }
-      100% { transform: translate(-8vmax, 6vmax) scale(0.95); }
-    }
-
-    /* 3. GRID */
-    .bg-grid {
+    .bg-blob {
       position: fixed;
-      inset: 0;
-      z-index: -6;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-      background-size: 56px 56px;
-      mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 75%);
-      -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 75%);
-    }
-
-    /* 4. ESTRELAS */
-    .bg-stars {
-      position: fixed;
-      inset: 0;
-      z-index: -5;
-      pointer-events: none;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* 5. VIGNETTE — mais cinematográfica */
-    .bg-vignette {
-      position: fixed;
-      inset: 0;
-      z-index: -4;
-      pointer-events: none;
-      background:
-        radial-gradient(ellipse 75% 75% at 50% 50%, transparent 30%, rgba(2, 3, 6, 0.85) 100%);
-    }
-
-    /* 6. CURSOR GLOW — branco */
-    .cursor-glow {
-      position: fixed;
-      top: 0; left: 0;
-      width: 700px; height: 700px;
-      border-radius: 50%;
-      background: radial-gradient(circle,
-        rgba(255, 255, 255, 0.07),
-        rgba(255, 255, 255, 0.03) 35%,
-        transparent 62%);
-      pointer-events: none;
       z-index: -3;
-      will-change: transform;
-      transform: translate(-50%, -50%);
-      mix-blend-mode: screen;
+      filter: blur(60px);
+      opacity: var(--blob-opacity);
+      pointer-events: none;
+      animation: floatBlob 20s infinite alternate ease-in-out;
     }
 
-    /* 7. NOISE */
-    .bg-noise {
+    .bg-blob-1 {
+      top: -10vmax; left: -10vmax;
+      width: 50vmax; height: 50vmax;
+      background: radial-gradient(circle, #86efac 0%, transparent 70%);
+      animation-delay: 0s;
+    }
+    .bg-blob-2 {
+      bottom: -15vmax; right: -10vmax;
+      width: 60vmax; height: 60vmax;
+      background: radial-gradient(circle, #bbf7d0 0%, transparent 70%);
+      animation-delay: -5s;
+    }
+    .bg-blob-3 {
+      top: 40%; left: 30%;
+      width: 40vmax; height: 40vmax;
+      background: radial-gradient(circle, #dcfce7 0%, transparent 70%);
+      animation-delay: -10s;
+    }
+
+    .bg-grid-lines {
       position: fixed;
       inset: 0;
       z-index: -2;
       pointer-events: none;
-      opacity: 0.035;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size: 200px 200px;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 60px 60px;
+      background-position: center center;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 80%);
     }
 
-    /* 8. OVERLAY DE TRANSIÇÃO */
-    .page-transition {
+    .bg-watermark {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(4rem, 15vw, 12rem);
+      font-weight: 900;
+      color: var(--watermark);
+      z-index: -1;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+    }
+
+    .bg-blocks {
       position: fixed;
       inset: 0;
-      background: #04050a;
-      z-index: 9999;
-      opacity: 0;
+      z-index: -1;
       pointer-events: none;
-      transition: opacity 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+      width: 100%;
+      height: 100%;
+      mix-blend-mode: multiply;
     }
-    .page-transition.active {
-      opacity: 1;
-      pointer-events: all;
-    }
+    [data-theme="dark"] .bg-blocks { mix-blend-mode: screen; }
 
     /* ============================================================
        GRID DE CARDS
@@ -243,94 +189,49 @@
       max-width: 1080px;
       perspective: 1400px;
       z-index: 1;
+      margin-bottom: 120px;
     }
 
-    /* ============================================================
-       CARD
-    ============================================================ */
     .card {
-      --accent:      #ffffff;
-      --accent-soft: rgba(255, 255, 255, 0.10);
-      --accent-glow: rgba(255, 255, 255, 0.25);
-
       position: relative;
       display: block;
       padding: calc(var(--u) * 1.7);
       min-height: calc(var(--u) * 12);
       border-radius: var(--radius);
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.005)),
-        rgba(12, 14, 18, 0.62);
-      border: 1px solid var(--border);
+      background: var(--glass);
+      border: 1px solid var(--card-border);
       color: inherit;
       text-decoration: none;
       overflow: hidden;
       isolation: isolate;
-      backdrop-filter: blur(24px) saturate(0.4);
-      -webkit-backdrop-filter: blur(24px) saturate(0.4);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.06),
-        0 1px 2px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 6px -1px var(--shadow-color), inset 0 1px 0 rgba(255, 255, 255, 0.2);
       transform: perspective(1000px) rotateX(0) rotateY(0) scale(1);
-      transition:
-        transform 0.7s var(--ease-out),
-        border-color 0.4s ease,
-        box-shadow 0.5s ease,
-        opacity 0.35s ease,
-        filter 0.35s ease;
+      transition: transform 0.7s var(--ease-out), box-shadow 0.5s ease, opacity 0.35s ease, filter 0.35s ease;
       will-change: transform;
       animation: cardIn 0.9s var(--ease-out) backwards;
+      cursor: pointer;
     }
 
     .card:nth-child(1) { animation-delay: 0.05s; }
     .card:nth-child(2) { animation-delay: 0.18s; }
     .card:nth-child(3) { animation-delay: 0.31s; }
-    .card:nth-child(4) { animation-delay: 0.44s; }
-    .card:nth-child(5) { animation-delay: 0.57s; }
-    .card:nth-child(6) { animation-delay: 0.70s; }
 
-    /* Borda conic animada */
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: -1px;
-      padding: 1px;
-      border-radius: inherit;
-      background: conic-gradient(
-        from var(--angle, 0deg),
-        transparent 0deg,
-        var(--accent) 45deg,
-        transparent 100deg,
-        transparent 260deg,
-        var(--accent) 315deg,
-        transparent 360deg
-      );
-      -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor;
-              mask-composite: exclude;
+    .card.clicked {
       opacity: 0;
-      transition: opacity 0.5s ease;
-      z-index: 4;
+      filter: blur(5px);
+      transform: scale(0.95) !important;
+      transition: all 0.3s ease-out;
       pointer-events: none;
     }
-    .card:hover::before {
-      opacity: 0.9;
-      animation: spinBorder 3.5s linear infinite;
-    }
 
-    /* Brilho radial */
     .card::after {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      background: radial-gradient(
-        600px circle at var(--mx, 50%) var(--my, 50%),
-        var(--accent-soft),
-        transparent 40%
-      );
+      background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), rgba(74, 222, 128, 0.15), transparent 40%);
       opacity: 0;
       transition: opacity 0.45s ease;
       pointer-events: none;
@@ -339,31 +240,19 @@
     .card:hover::after { opacity: 1; }
 
     .card:hover {
-      border-color: rgba(255, 255, 255, 0.18);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.10),
-        0 2px 6px rgba(0, 0, 0, 0.5),
-        0 24px 60px -16px rgba(255, 255, 255, 0.06),
-        0 24px 60px -16px var(--accent-glow);
+      box-shadow: 0 20px 40px -10px var(--shadow-color), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
-    /* Spotlight */
-    .grid:hover .card:not(:hover) {
-      opacity: 0.4;
-      filter: saturate(0) blur(0.4px);
+    .grid:hover .card:not(:hover):not(.clicked) {
+      opacity: 0.5;
+      filter: saturate(0.5) blur(0.5px);
     }
 
-    /* Shine diagonal */
     .card-shine {
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      background: linear-gradient(
-        115deg,
-        transparent 30%,
-        rgba(255, 255, 255, 0.09) 50%,
-        transparent 70%
-      );
+      background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.4) 50%, transparent 70%);
       transform: translateX(-120%);
       transition: transform 1s var(--ease-out);
       pointer-events: none;
@@ -371,25 +260,6 @@
     }
     .card:hover .card-shine { transform: translateX(120%); }
 
-    /* Linha de acento inferior */
-    .card-accent {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 70%;
-      height: 1px;
-      transform: translateX(-50%) scaleX(0);
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      transition: transform 0.6s var(--ease-out);
-      z-index: 5;
-      pointer-events: none;
-      filter: drop-shadow(0 0 6px var(--accent-glow));
-    }
-    .card:hover .card-accent {
-      transform: translateX(-50%) scaleX(1);
-    }
-
-    /* Número marca d'água */
     .card-num {
       position: absolute;
       bottom: calc(var(--u) * -1.4);
@@ -399,19 +269,17 @@
       line-height: 1;
       letter-spacing: -0.08em;
       color: transparent;
-      -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.06);
-      transition: -webkit-text-stroke-color 0.6s ease, transform 0.6s var(--ease-out);
+      -webkit-text-stroke: 1.5px var(--num-stroke);
+      transition: all 0.6s ease;
       pointer-events: none;
       user-select: none;
-      font-variant-numeric: tabular-nums;
       z-index: 0;
     }
     .card:hover .card-num {
-      -webkit-text-stroke-color: rgba(255, 255, 255, 0.28);
+      -webkit-text-stroke-color: var(--num-stroke-hover);
       transform: translateY(-2px);
     }
 
-    /* Corpo */
     .card-body {
       position: relative;
       z-index: 2;
@@ -422,7 +290,6 @@
       transform: translateZ(28px);
     }
 
-    /* Topo */
     .card-top {
       display: flex;
       justify-content: space-between;
@@ -437,19 +304,21 @@
       width: calc(var(--u) * 3.1);
       height: calc(var(--u) * 3.1);
       border-radius: var(--radius-s);
-      background: linear-gradient(135deg,
-        color-mix(in srgb, var(--accent) 16%, transparent),
-        color-mix(in srgb, var(--accent) 3%, transparent));
-      border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-      font-size: calc(var(--u) * 1.4);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      transition: transform 0.55s var(--ease-out), box-shadow 0.4s;
+      background: var(--text);
+      color: var(--bg);
+      box-shadow: 0 4px 12px var(--shadow-color);
+      transition: transform 0.55s var(--ease-out), background-color 0.3s, color 0.3s;
+    }
+    .card-icon svg {
+      width: calc(var(--u) * 1.6);
+      height: calc(var(--u) * 1.6);
+      fill: currentColor;
+      transform: translateX(2px);
     }
     .card:hover .card-icon {
       transform: translateZ(24px) scale(1.08) rotate(-4deg);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.14),
-        0 10px 28px -6px var(--accent-glow);
+      background: var(--accent);
+      color: #111827;
     }
 
     .card-dot {
@@ -459,17 +328,9 @@
       border-radius: 50%;
       background: var(--accent);
       box-shadow: 0 0 12px var(--accent);
-      opacity: 0.5;
       margin-top: calc(var(--u) * 0.35);
-      transition: opacity 0.4s, box-shadow 0.4s;
-    }
-    .card:hover .card-dot {
-      opacity: 1;
-      box-shadow: 0 0 18px var(--accent), 0 0 32px var(--accent-glow);
-      animation: pulse 1.8s ease-in-out infinite;
     }
 
-    /* Info */
     .card-info { margin-bottom: calc(var(--u) * 1.1); }
 
     .card-title {
@@ -487,7 +348,6 @@
       line-height: 1.5;
     }
 
-    /* Rodapé */
     .card-bottom {
       display: flex;
       align-items: center;
@@ -505,91 +365,255 @@
       color: var(--text-dim);
       padding: calc(var(--u) * 0.28) calc(var(--u) * 0.6);
       border-radius: calc(var(--u) * 0.5);
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--hotbar-hover);
+      border: 1px solid var(--border);
     }
 
     .pill-dot {
       width: calc(var(--u) * 0.35);
       height: calc(var(--u) * 0.35);
       border-radius: 50%;
-      background: color-mix(in srgb, var(--accent) 80%, transparent);
-      box-shadow: 0 0 6px var(--accent);
+      background: var(--accent);
       flex-shrink: 0;
     }
 
-    .card-arrow {
-      display: inline-flex;
+    /* ============================================================
+       HOTBAR
+    ============================================================ */
+    .hotbar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px;
+      background: var(--hotbar-bg);
+      border: 1px solid var(--hotbar-border);
+      border-radius: 999px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px -10px var(--shadow-color);
+      z-index: 1000;
+      animation: hotbarIn 1s var(--ease-out) 0.5s both;
+    }
+
+    .hotbar-btn {
+      display: flex;
       align-items: center;
       justify-content: center;
-      width: calc(var(--u) * 2.1);
-      height: calc(var(--u) * 2.1);
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out);
+    }
+
+    .hotbar-btn:hover {
+      background: var(--hotbar-hover);
+      transform: scale(1.02);
+    }
+
+    .hotbar-btn.primary {
+      background: var(--text);
+      color: var(--bg);
+    }
+    .hotbar-btn.primary:hover {
+      background: var(--accent);
+      color: #111827;
+      box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+    }
+
+    .hotbar-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ============================================================
+       MODAL DO PIX
+    ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-content {
+      background: var(--modal-bg);
+      padding: 24px;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 340px;
+      text-align: center;
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.4);
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.4s var(--ease-out), background-color 0.6s ease;
+      position: relative;
+      color: var(--text);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--hotbar-hover);
+      border: none;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: var(--border); }
+
+    .modal-content h3 {
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+    }
+    .modal-content p {
       color: var(--text-dim);
-      transition: all 0.5s var(--ease-out);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+    
+    .modal-qr {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #ffffff; 
+    }
+    .modal-qr img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* ============================================================
+       TELA DE TRANSIÇÃO BRANCA E BOLHAS
+    ============================================================ */
+    #page-transition {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      z-index: 99999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    #page-transition.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .bubble-burst {
+      position: fixed;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(74, 222, 128, 0.4) 40%, transparent 70%);
+      border: 2px solid var(--accent);
+      transform: translate(-50%, -50%) scale(0);
+      pointer-events: none;
+      z-index: 9998;
+      animation: burst 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    /* Bolinha que voa para o Pix */
+    .pix-fly-ball {
+      position: fixed;
+      border-radius: 999px;
+      background: var(--text);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2500;
+      pointer-events: none;
+      box-shadow: 0 10px 30px rgba(74, 222, 128, 0.4);
+      overflow: hidden;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .pix-fly-ball svg {
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
     }
-    .card-arrow svg {
-      width: calc(var(--u) * 0.85);
-      height: calc(var(--u) * 0.85);
-    }
-    .card:hover .card-arrow {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #06070a;
-      transform: translateZ(20px) translate(2px, -2px);
-      box-shadow: 0 0 24px -4px var(--accent-glow);
+    .pix-fly-ball.bursting {
+      animation: pixBurstAnim 0.4s ease-out forwards;
     }
 
     /* ============================================================
-       ACENTOS MONOCROMÁTICOS
-    ============================================================ */
-    .card[data-accent="white"]  { --accent: #ffffff; --accent-soft: rgba(255, 255, 255, 0.12); --accent-glow: rgba(255, 255, 255, 0.30); }
-    .card[data-accent="silver"] { --accent: #d4d4d4; --accent-soft: rgba(212, 212, 212, 0.11); --accent-glow: rgba(212, 212, 212, 0.26); }
-    .card[data-accent="gray"]   { --accent: #a3a3a3; --accent-soft: rgba(163, 163, 163, 0.10); --accent-glow: rgba(163, 163, 163, 0.22); }
-    .card[data-accent="dim"]    { --accent: #737373; --accent-soft: rgba(115, 115, 115, 0.10); --accent-glow: rgba(115, 115, 115, 0.20); }
-
-    /* ============================================================
-       KEYFRAMES
+       ANIMAÇÕES
     ============================================================ */
     @keyframes cardIn {
-      from {
-        opacity: 0;
-        transform: perspective(1000px) translateY(24px) scale(0.95);
-        filter: blur(10px);
-      }
-      to {
-        opacity: 1;
-        transform: perspective(1000px) translateY(0) scale(1);
-        filter: blur(0);
-      }
+      from { opacity: 0; transform: perspective(1000px) translateY(24px) scale(0.95); filter: blur(10px); }
+      to { opacity: 1; transform: perspective(1000px) translateY(0) scale(1); filter: blur(0); }
     }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50%      { transform: scale(1.3); }
+    @keyframes hotbarIn {
+      from { opacity: 0; transform: translate(-50%, 20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
     }
 
-    @property --angle {
-      syntax: "<angle>";
-      initial-value: 0deg;
-      inherits: false;
+    @keyframes floatBlob {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(5%, 5%) scale(1.1); }
+      100% { transform: translate(-5%, -5%) scale(1); }
     }
-    @keyframes spinBorder {
-      to { --angle: 360deg; }
+
+    @keyframes burst {
+      0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+    }
+
+    @keyframes pixBurstAnim {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(2); opacity: 0.8; }
+      100% { transform: scale(4); opacity: 0; }
     }
 
     /* ============================================================
-       RESPONSIVO / ACESSIBILIDADE
+       RESPONSIVO
     ============================================================ */
     @media (max-width: 560px) {
       .grid { grid-template-columns: 1fr; }
-    }
-
-    @media (hover: none) {
-      .cursor-glow { display: none; }
+      .hotbar { width: calc(100% - 32px); justify-content: space-between; }
+      .hotbar-btn { padding: 10px 14px; font-size: 0.85rem; }
+      .hotbar-btn span { display: none; }
+      .hotbar-btn.primary span { display: block; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -597,39 +621,32 @@
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
-      .cursor-glow,
-      .bg-stars { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ================= BACKGROUND ================= -->
-  <div class="bg-base" aria-hidden="true"></div>
-  <div class="bg-aurora" id="aurora" aria-hidden="true">
-    <span class="blob blob-1"></span>
-    <span class="blob blob-2"></span>
-    <span class="blob blob-3"></span>
-    <span class="blob blob-4"></span>
-  </div>
-  <div class="bg-grid" aria-hidden="true"></div>
-  <canvas class="bg-stars" id="stars" aria-hidden="true"></canvas>
-  <div class="bg-vignette" aria-hidden="true"></div>
-  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
-  <div class="bg-noise" aria-hidden="true"></div>
+  <div id="page-transition"></div>
 
-  <!-- ================= CARDS ================= -->
+  <!-- BACKGROUND -->
+  <div class="bg-blob bg-blob-1"></div>
+  <div class="bg-blob bg-blob-2"></div>
+  <div class="bg-blob bg-blob-3"></div>
+  <div class="bg-grid-lines"></div>
+  <div class="bg-watermark">geometry</div>
+  <canvas class="bg-blocks" id="blocks"></canvas>
+
+  <!-- CARDS -->
   <main class="grid">
-
-    <!-- CARD 1 -->
-    <a class="card" href="1.html" data-accent="white">
-      <span class="card-num" aria-hidden="true">01</span>
-      <span class="card-shine" aria-hidden="true"></span>
-      <span class="card-accent" aria-hidden="true"></span>
+    <a class="card" href="1.html">
+      <span class="card-num">01</span>
+      <span class="card-shine"></span>
       <div class="card-body">
         <div class="card-top">
-          <div class="card-icon" aria-hidden="true">🎮</div>
-          <span class="card-dot" aria-hidden="true"></span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/></svg>
+          </div>
+          <span class="card-dot"></span>
         </div>
         <div class="card-info">
           <h2 class="card-title">Jogo 1</h2>
@@ -637,24 +654,19 @@
         </div>
         <div class="card-bottom">
           <span class="card-file"><span class="pill-dot"></span>1.html</span>
-          <span class="card-arrow" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7 17L17 7M9 7h8v8"/>
-            </svg>
-          </span>
         </div>
       </div>
     </a>
 
-    <!-- CARD 2 -->
-    <a class="card" href="2.hmtl" data-accent="silver">
-      <span class="card-num" aria-hidden="true">02</span>
-      <span class="card-shine" aria-hidden="true"></span>
-      <span class="card-accent" aria-hidden="true"></span>
+    <a class="card" href="2.hmtl">
+      <span class="card-num">02</span>
+      <span class="card-shine"></span>
       <div class="card-body">
         <div class="card-top">
-          <div class="card-icon" aria-hidden="true">🕹️</div>
-          <span class="card-dot" aria-hidden="true"></span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/></svg>
+          </div>
+          <span class="card-dot"></span>
         </div>
         <div class="card-info">
           <h2 class="card-title">Jogo 2</h2>
@@ -662,24 +674,19 @@
         </div>
         <div class="card-bottom">
           <span class="card-file"><span class="pill-dot"></span>2.hmtl</span>
-          <span class="card-arrow" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7 17L17 7M9 7h8v8"/>
-            </svg>
-          </span>
         </div>
       </div>
     </a>
 
-    <!-- CARD 3 -->
-    <a class="card" href="3.html" data-accent="gray">
-      <span class="card-num" aria-hidden="true">03</span>
-      <span class="card-shine" aria-hidden="true"></span>
-      <span class="card-accent" aria-hidden="true"></span>
+    <a class="card" href="3.html">
+      <span class="card-num">03</span>
+      <span class="card-shine"></span>
       <div class="card-body">
         <div class="card-top">
-          <div class="card-icon" aria-hidden="true">👾</div>
-          <span class="card-dot" aria-hidden="true"></span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/></svg>
+          </div>
+          <span class="card-dot"></span>
         </div>
         <div class="card-info">
           <h2 class="card-title">Jogo 3</h2>
@@ -687,204 +694,296 @@
         </div>
         <div class="card-bottom">
           <span class="card-file"><span class="pill-dot"></span>3.html</span>
-          <span class="card-arrow" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7 17L17 7M9 7h8v8"/>
-            </svg>
-          </span>
         </div>
       </div>
     </a>
-
-    <!--
-      NOVO CARD — data-accent: white | silver | gray | dim
-    -->
-
   </main>
 
-  <!-- OVERLAY DE TRANSIÇÃO -->
-  <div class="page-transition active" id="pageTransition" aria-hidden="true"></div>
+  <!-- HOTBAR -->
+  <nav class="hotbar" id="mainHotbar">
+    <button class="hotbar-btn" id="themeToggle" title="Alternar Tema">
+      <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+
+    <a href="https://capimm.vercel.app/" target="_blank" class="hotbar-btn primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      <span>Meu Site</span>
+    </a>
+
+    <button class="hotbar-btn" id="pixBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span>Apoiar via Pix</span>
+    </button>
+  </nav>
+
+  <!-- MODAL DO PIX -->
+  <div class="modal-overlay" id="pixModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closePix">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3>Apoie o projeto!</h3>
+      <p>Escaneie o QR Code no seu banco. Obrigado! 💚</p>
+      <div class="modal-qr">
+        <!-- COLOQUE A SUA IMAGEM DO QR CODE AQUI E RENOMEIE PARA qrcode.png -->
+        <img src="qrcode.png" alt="QR Code Pix" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=exemplo-de-pix-aqui'">
+      </div>
+    </div>
+  </div>
 
   <script>
-    /* ============================================================
-       CONFIG
-    ============================================================ */
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const overlay = document.getElementById('pageTransition');
 
-    /* ============================================================
-       0. FADE-IN AO ENTRAR
-    ============================================================ */
-    window.addEventListener('DOMContentLoaded', () => {
-      requestAnimationFrame(() => {
-        overlay.classList.remove('active');
-      });
-    });
-
-    /* ============================================================
-       1. BLOQUEIA BOTÃO DIREITO
-    ============================================================ */
+    /* 1. BLOQUEIA BOTÃO DIREITO */
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    /* ============================================================
-       2. TRANSIÇÃO SUAVE ENTRE PÁGINAS
-    ============================================================ */
-    document.querySelectorAll('a[href]').forEach((link) => {
-      const href = link.getAttribute('href');
-      if (!href) return;
-      if (href.startsWith('http') ||
-          href.startsWith('#') ||
-          href.startsWith('mailto') ||
-          href.startsWith('tel:') ||
-          href.startsWith('javascript:') ||
-          link.target === '_blank') return;
+    /* 2. TEMA CLARO / ESCURO */
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const iconSun = document.getElementById('icon-sun');
+    const iconMoon = document.getElementById('icon-moon');
 
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        overlay.classList.add('active');
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      html.setAttribute('data-theme', 'dark');
+      iconSun.style.display = 'block';
+      iconMoon.style.display = 'none';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      if (html.getAttribute('data-theme') === 'light') {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        iconSun.style.display = 'block';
+        iconMoon.style.display = 'none';
+      } else {
+        html.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        iconSun.style.display = 'none';
+        iconMoon.style.display = 'block';
+      }
+    });
+
+    /* 3. EFEITO DO PIX (BOLA VOANDO) */
+    const pixBtn = document.getElementById('pixBtn');
+    const pixModal = document.getElementById('pixModal');
+    const closePix = document.getElementById('closePix');
+    const hotbar = document.getElementById('mainHotbar');
+
+    pixBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Pega as coordenadas exatas do botão
+      const rect = pixBtn.getBoundingClientRect();
+      const startX = rect.left;
+      const startY = rect.top;
+      const width = rect.width;
+      const height = rect.height;
+
+      // Cria a bolinha clone
+      const ball = document.createElement('div');
+      ball.className = 'pix-fly-ball';
+      ball.style.left = `${startX}px`;
+      ball.style.top = `${startY}px`;
+      ball.style.width = `${width}px`;
+      ball.style.height = `${height}px`;
+      
+      // Copia o ícone do botão para a bolinha
+      const iconSvg = pixBtn.querySelector('svg').outerHTML;
+      ball.innerHTML = iconSvg;
+
+      document.body.appendChild(ball);
+      
+      // Esconde o botão original
+      pixBtn.style.opacity = '0';
+      pixBtn.style.pointerEvents = 'none';
+
+      // Calcula a posição central da tela (onde o modal vai aparecer)
+      const targetX = (window.innerWidth / 2) - (width / 2);
+      const targetY = (window.innerHeight / 2) - (height / 2);
+
+      // Anima a bolinha usando Web Animations API
+      const animation = ball.animate([
+        { 
+          transform: 'translate(0, 0) scale(1)', 
+          borderRadius: '999px',
+          backgroundColor: 'var(--text)'
+        },
+        { 
+          transform: `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.3)`, 
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent)'
+        }
+      ], {
+        duration: 500,
+        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', // Efeito elástico
+        fill: 'forwards'
+      });
+
+      // Quando a animação terminar, faz a bolinha estourar e mostra o modal
+      animation.onfinish = () => {
+        ball.classList.add('bursting');
+        
+        setTimeout(() => {
+          ball.remove();
+          pixModal.classList.add('active');
+          
+          // Restaura o botão invisivelmente (para quando o modal fechar)
+          setTimeout(() => {
+            pixBtn.style.opacity = '1';
+            pixBtn.style.pointerEvents = 'auto';
+          }, 300);
+          
+        }, 350); // Tempo do estouro da bolinha
+      };
+    });
+
+    // Fecha o modal
+    closePix.addEventListener('click', () => pixModal.classList.remove('active'));
+    pixModal.addEventListener('click', (e) => {
+      if (e.target === pixModal) pixModal.classList.remove('active');
+    });
+
+    /* 4. EFEITO DE ESTOURO DE BOLHA + TRANSIÇÃO BRANCA (Cards) */
+    const transitionScreen = document.getElementById('page-transition');
+
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        e.preventDefault(); 
+        const href = this.getAttribute('href');
+
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX || (rect.left + rect.width / 2);
+        const y = e.clientY || (rect.top + rect.height / 2);
+
+        // Cria a bolha
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble-burst';
+        bubble.style.left = x + 'px';
+        bubble.style.top = y + 'px';
+        bubble.style.width = '100px';
+        bubble.style.height = '100px';
+        document.body.appendChild(bubble);
+
+        // Faz o card sumir
+        this.classList.add('clicked');
+
+        // Tela branca
+        setTimeout(() => {
+          transitionScreen.classList.add('active');
+        }, 200);
+
+        // Navega
         setTimeout(() => {
           window.location.href = href;
-        }, 450);
+        }, 700);
       });
     });
 
-    /* ============================================================
-       3. PARALLAX DA AURORA
-    ============================================================ */
-    if (!reduceMotion) {
-      const aurora = document.getElementById('aurora');
-      let tx = 0, ty = 0, cx = 0, cy = 0;
-
-      document.addEventListener('mousemove', (e) => {
-        tx = (e.clientX / innerWidth  - 0.5) * 32;
-        ty = (e.clientY / innerHeight - 0.5) * 32;
-      });
-
-      (function loop() {
-        cx += (tx - cx) * 0.05;
-        cy += (ty - cy) * 0.05;
-        aurora.style.transform = `translate(${cx}px, ${cy}px)`;
-        requestAnimationFrame(loop);
-      })();
-    }
-
-    /* ============================================================
-       4. CURSOR GLOW COM LERP
-    ============================================================ */
-    if (!reduceMotion && matchMedia('(hover: hover)').matches) {
-      const glow = document.getElementById('cursorGlow');
-      let mx = innerWidth / 2, my = innerHeight / 2;
-      let gx = mx, gy = my;
-
-      document.addEventListener('mousemove', (e) => {
-        mx = e.clientX;
-        my = e.clientY;
-      });
-
-      (function loop() {
-        gx += (mx - gx) * 0.08;
-        gy += (my - gy) * 0.08;
-        glow.style.transform = `translate(${gx - 350}px, ${gy - 350}px)`;
-        requestAnimationFrame(loop);
-      })();
-    }
-
-    /* ============================================================
-       5. ESTRELAS (canvas)
-    ============================================================ */
-    (function stars() {
-      if (reduceMotion) return;
-
-      const canvas = document.getElementById('stars');
+    /* 5. BACKGROUND DE BLOCOS DE GELEIA */
+    (function jellyBlocks() {
+      const canvas = document.getElementById('blocks');
       const ctx = canvas.getContext('2d');
-      const DPR = Math.min(devicePixelRatio || 1, 2);
-      let W = 0, H = 0, particles = [];
+      const DPR = Math.min(window.devicePixelRatio || 1, 2);
+      
+      let W = 0, H = 0;
+      let cols = 0, rows = 0;
+      const cellSize = 32;
+      const gap = 4;
+      let blocks = [];
+
+      let tx = -9999, ty = -9999;
+      let mx = -9999, my = -9999;
 
       function init() {
-        W = innerWidth;
-        H = innerHeight;
-        canvas.width  = W * DPR;
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = W * DPR;
         canvas.height = H * DPR;
-        canvas.style.width  = W + 'px';
+        canvas.style.width = W + 'px';
         canvas.style.height = H + 'px';
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-        const count = Math.min(100, Math.max(35, Math.floor((W * H) / 20000)));
-        particles = Array.from({ length: count }, () => ({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: Math.random() * 1.5 + 0.3,
-          vx: (Math.random() - 0.5) * 0.12,
-          vy: (Math.random() - 0.5) * 0.12,
-          alpha: Math.random() * 0.5 + 0.25,
-          tw: Math.random() * Math.PI * 2,
-          twSpeed: Math.random() * 0.018 + 0.005,
-        }));
+        cols = Math.ceil(W / (cellSize + gap)) + 1;
+        rows = Math.ceil(H / (cellSize + gap)) + 1;
+
+        blocks = [];
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            blocks.push({
+              x: c * (cellSize + gap),
+              y: r * (cellSize + gap),
+              scale: 1,
+              targetScale: 1,
+              vx: 0
+            });
+          }
+        }
       }
 
-      function frame() {
+      document.addEventListener('mousemove', (e) => {
+        tx = e.clientX;
+        ty = e.clientY;
+      }, { passive: true });
+      document.addEventListener('mouseleave', () => { tx = -9999; ty = -9999; });
+
+      function render() {
+        if (mx === -9999) { mx = tx; my = ty; }
+        else {
+          mx += (tx - mx) * 0.2;
+          my += (ty - my) * 0.2;
+        }
+
         ctx.clearRect(0, 0, W, H);
-        for (const p of particles) {
-          p.x += p.vx;
-          p.y += p.vy;
-          p.tw += p.twSpeed;
+        const radius = 180;
+        
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const baseColor = isDark ? '255, 255, 255' : '74, 222, 128'; 
 
-          if (p.x < -5) p.x = W + 5;
-          if (p.x > W + 5) p.x = -5;
-          if (p.y < -5) p.y = H + 5;
-          if (p.y > H + 5) p.y = -5;
+        for (const b of blocks) {
+          const cx = b.x + cellSize / 2;
+          const cy = b.y + cellSize / 2;
+          const dx = cx - mx;
+          const dy = cy - my;
+          const dist = Math.sqrt(dx * dx + dy * dy);
 
-          const a = p.alpha * (0.55 + 0.45 * Math.sin(p.tw));
+          if (dist < radius) {
+            const force = 1 - dist / radius;
+            b.targetScale = 1 + force * 1.5; 
+          } else {
+            b.targetScale = 1;
+          }
+
+          const stiffness = 0.15;
+          const damping = 0.75;
+          
+          b.vx += (b.targetScale - b.scale) * stiffness;
+          b.vx *= damping;
+          b.scale += b.vx;
+
+          const actualSize = cellSize * b.scale;
+          const offset = (actualSize - cellSize) / 2;
+          const drawX = b.x - offset;
+          const drawY = b.y - offset;
+
+          const alpha = 0.05 + (b.scale - 1) * 0.1; 
+          
+          ctx.fillStyle = `rgba(${baseColor}, ${alpha})`;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
+          ctx.roundRect(drawX, drawY, actualSize, actualSize, 6 * b.scale);
           ctx.fill();
         }
-        requestAnimationFrame(frame);
+
+        requestAnimationFrame(render);
       }
 
       init();
-      frame();
-
-      let rT;
-      addEventListener('resize', () => {
-        clearTimeout(rT);
-        rT = setTimeout(init, 150);
-      });
+      window.addEventListener('resize', init);
+      if (!reduceMotion) render();
     })();
-
-    /* ============================================================
-       6. TILT 3D + BRILLHO RADIAL
-    ============================================================ */
-    if (!reduceMotion) {
-      document.querySelectorAll('.card').forEach((card) => {
-        card.addEventListener('mouseenter', () => {
-          card.style.transition =
-            'transform 0.12s ease-out, border-color 0.4s ease, box-shadow 0.5s ease, opacity 0.3s ease, filter 0.3s ease';
-        });
-
-        card.addEventListener('mousemove', (e) => {
-          const r = card.getBoundingClientRect();
-          const x = e.clientX - r.left;
-          const y = e.clientY - r.top;
-          const rx = ((y / r.height) - 0.5) * -8;
-          const ry = ((x / r.width)  - 0.5) *  8;
-
-          card.style.transform =
-            `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
-          card.style.setProperty('--mx', `${x}px`);
-          card.style.setProperty('--my', `${y}px`);
-        });
-
-        card.addEventListener('mouseleave', () => {
-          card.style.transition =
-            'transform 0.7s cubic-bezier(0.23,1,0.32,1), border-color 0.4s ease, box-shadow 0.5s ease, opacity 0.3s ease, filter 0.3s ease';
-          card.style.transform =
-            'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
-        });
-      });
-    }
   </script>
-
 </body>
 </html>
