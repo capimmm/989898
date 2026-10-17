@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>eo-jogo-</title>
+  <meta name="theme-color" content="#04050a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       RESET
+    ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      color-scheme: dark;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ============================================================
+       SELEÇÃO AZUL
+    ============================================================ */
+    ::selection {
+      background: #3b82f6;
+      color: #ffffff;
+      -webkit-text-fill-color: #ffffff;
+    }
+    ::-moz-selection {
+      background: #3b82f6;
+      color: #ffffff;
+    }
+
+    /* ============================================================
+       SISTEMA DE ESCALA FLUIDA
+    ============================================================ */
+    :root {
+      --bg: #04050a;
+      --text: #f4f6fb;
+      --text-dim: #8a92a8;
+      --border: rgba(255, 255, 255, 0.07);
+
+      --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+      --u: clamp(13px, 0.7vw + 10px, 18px);
+
+      --radius:   calc(var(--u) * 1.5);
+      --radius-s: calc(var(--u) * 0.9);
+
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    html, body { min-height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: clamp(20px, 4vw, 56px);
+      position: relative;
+    }
+
+    /* ============================================================
+       BACKGROUND — MONOCROMÁTICO (8 camadas)
+    ============================================================ */
+
+    /* 1. BASE */
+    .bg-base {
+      position: fixed;
+      inset: 0;
+      z-index: -8;
+      background:
+        radial-gradient(ellipse 110% 80% at 50% -20%, #0c0d10 0%, transparent 60%),
+        radial-gradient(ellipse 90% 60% at 50% 120%, #08090c 0%, transparent 60%),
+        #04050a;
+    }
+
+    /* 2. AURORA — névoa branca/cinza */
+    .bg-aurora {
+      position: fixed;
+      inset: 0;
+      z-index: -7;
+      overflow: hidden;
+      pointer-events: none;
+      filter: blur(70px);
+      opacity: 0.9;
+      transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+      will-change: transform;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      will-change: transform;
+    }
+    .blob-1 {
+      width: 58vmax; height: 58vmax;
+      top: -20vmax; left: -20vmax;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 65%);
+      animation: drift1 30s ease-in-out infinite alternate;
+    }
+    .blob-2 {
+      width: 52vmax; height: 52vmax;
+      bottom: -20vmax; right: -20vmax;
+      background: radial-gradient(circle, rgba(210, 210, 210, 0.11), transparent 65%);
+      animation: drift2 34s ease-in-out infinite alternate;
+    }
+    .blob-3 {
+      width: 44vmax; height: 44vmax;
+      top: 30%; left: 40%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.09), transparent 65%);
+      animation: drift3 38s ease-in-out infinite alternate;
+    }
+    .blob-4 {
+      width: 40vmax; height: 40vmax;
+      top: 55%; left: 5%;
+      background: radial-gradient(circle, rgba(170, 170, 170, 0.08), transparent 65%);
+      animation: drift4 32s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift1 {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(10vmax, 8vmax) scale(1.1); }
+      100% { transform: translate(-5vmax, 15vmax) scale(0.95); }
+    }
+    @keyframes drift2 {
+      0%   { transform: translate(0, 0) scale(1.05); }
+      50%  { transform: translate(-12vmax, -8vmax) scale(0.95); }
+      100% { transform: translate(6vmax, -14vmax) scale(1.1); }
+    }
+    @keyframes drift3 {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(-14vmax, 10vmax) scale(1.15); }
+      100% { transform: translate(12vmax, -6vmax) scale(0.9); }
+    }
+    @keyframes drift4 {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(16vmax, -10vmax) scale(1.1); }
+      100% { transform: translate(-8vmax, 6vmax) scale(0.95); }
+    }
+
+    /* 3. GRID */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: -6;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 75%);
+    }
+
+    /* 4. ESTRELAS */
+    .bg-stars {
+      position: fixed;
+      inset: 0;
+      z-index: -5;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 5. VIGNETTE — mais cinematográfica */
+    .bg-vignette {
+      position: fixed;
+      inset: 0;
+      z-index: -4;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 75% 75% at 50% 50%, transparent 30%, rgba(2, 3, 6, 0.85) 100%);
+    }
+
+    /* 6. CURSOR GLOW — branco */
+    .cursor-glow {
+      position: fixed;
+      top: 0; left: 0;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle,
+        rgba(255, 255, 255, 0.07),
+        rgba(255, 255, 255, 0.03) 35%,
+        transparent 62%);
+      pointer-events: none;
+      z-index: -3;
+      will-change: transform;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: screen;
+    }
+
+    /* 7. NOISE */
+    .bg-noise {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* 8. OVERLAY DE TRANSIÇÃO */
+    .page-transition {
+      position: fixed;
+      inset: 0;
+      background: #04050a;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .page-transition.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ============================================================
+       GRID DE CARDS
+    ============================================================ */
+    .grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      gap: clamp(14px, 1.8vw, 24px);
+      width: 100%;
+      max-width: 1080px;
+      perspective: 1400px;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       CARD
+    ============================================================ */
+    .card {
+      --accent:      #ffffff;
+      --accent-soft: rgba(255, 255, 255, 0.10);
+      --accent-glow: rgba(255, 255, 255, 0.25);
+
+      position: relative;
+      display: block;
+      padding: calc(var(--u) * 1.7);
+      min-height: calc(var(--u) * 12);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.005)),
+        rgba(12, 14, 18, 0.62);
+      border: 1px solid var(--border);
+      color: inherit;
+      text-decoration: none;
+      overflow: hidden;
+      isolation: isolate;
+      backdrop-filter: blur(24px) saturate(0.4);
+      -webkit-backdrop-filter: blur(24px) saturate(0.4);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 1px 2px rgba(0, 0, 0, 0.3);
+      transform: perspective(1000px) rotateX(0) rotateY(0) scale(1);
+      transition:
+        transform 0.7s var(--ease-out),
+        border-color 0.4s ease,
+        box-shadow 0.5s ease,
+        opacity 0.35s ease,
+        filter 0.35s ease;
+      will-change: transform;
+      animation: cardIn 0.9s var(--ease-out) backwards;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.18s; }
+    .card:nth-child(3) { animation-delay: 0.31s; }
+    .card:nth-child(4) { animation-delay: 0.44s; }
+    .card:nth-child(5) { animation-delay: 0.57s; }
+    .card:nth-child(6) { animation-delay: 0.70s; }
+
+    /* Borda conic animada */
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      padding: 1px;
+      border-radius: inherit;
+      background: conic-gradient(
+        from var(--angle, 0deg),
+        transparent 0deg,
+        var(--accent) 45deg,
+        transparent 100deg,
+        transparent 260deg,
+        var(--accent) 315deg,
+        transparent 360deg
+      );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 4;
+      pointer-events: none;
+    }
+    .card:hover::before {
+      opacity: 0.9;
+      animation: spinBorder 3.5s linear infinite;
+    }
+
+    /* Brilho radial */
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(
+        600px circle at var(--mx, 50%) var(--my, 50%),
+        var(--accent-soft),
+        transparent 40%
+      );
+      opacity: 0;
+      transition: opacity 0.45s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .card:hover::after { opacity: 1; }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 2px 6px rgba(0, 0, 0, 0.5),
+        0 24px 60px -16px rgba(255, 255, 255, 0.06),
+        0 24px 60px -16px var(--accent-glow);
+    }
+
+    /* Spotlight */
+    .grid:hover .card:not(:hover) {
+      opacity: 0.4;
+      filter: saturate(0) blur(0.4px);
+    }
+
+    /* Shine diagonal */
+    .card-shine {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        115deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.09) 50%,
+        transparent 70%
+      );
+      transform: translateX(-120%);
+      transition: transform 1s var(--ease-out);
+      pointer-events: none;
+      z-index: 3;
+    }
+    .card:hover .card-shine { transform: translateX(120%); }
+
+    /* Linha de acento inferior */
+    .card-accent {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 70%;
+      height: 1px;
+      transform: translateX(-50%) scaleX(0);
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      transition: transform 0.6s var(--ease-out);
+      z-index: 5;
+      pointer-events: none;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+    .card:hover .card-accent {
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    /* Número marca d'água */
+    .card-num {
+      position: absolute;
+      bottom: calc(var(--u) * -1.4);
+      right: calc(var(--u) * 0.8);
+      font-size: calc(var(--u) * 7);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.08em;
+      color: transparent;
+      -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.06);
+      transition: -webkit-text-stroke-color 0.6s ease, transform 0.6s var(--ease-out);
+      pointer-events: none;
+      user-select: none;
+      font-variant-numeric: tabular-nums;
+      z-index: 0;
+    }
+    .card:hover .card-num {
+      -webkit-text-stroke-color: rgba(255, 255, 255, 0.28);
+      transform: translateY(-2px);
+    }
+
+    /* Corpo */
+    .card-body {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: calc(var(--u) * 9);
+      transform: translateZ(28px);
+    }
+
+    /* Topo */
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: calc(var(--u) * 1.2);
+    }
+
+    .card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: calc(var(--u) * 3.1);
+      height: calc(var(--u) * 3.1);
+      border-radius: var(--radius-s);
+      background: linear-gradient(135deg,
+        color-mix(in srgb, var(--accent) 16%, transparent),
+        color-mix(in srgb, var(--accent) 3%, transparent));
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+      font-size: calc(var(--u) * 1.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      transition: transform 0.55s var(--ease-out), box-shadow 0.4s;
+    }
+    .card:hover .card-icon {
+      transform: translateZ(24px) scale(1.08) rotate(-4deg);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 10px 28px -6px var(--accent-glow);
+    }
+
+    .card-dot {
+      display: inline-block;
+      width: calc(var(--u) * 0.45);
+      height: calc(var(--u) * 0.45);
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      opacity: 0.5;
+      margin-top: calc(var(--u) * 0.35);
+      transition: opacity 0.4s, box-shadow 0.4s;
+    }
+    .card:hover .card-dot {
+      opacity: 1;
+      box-shadow: 0 0 18px var(--accent), 0 0 32px var(--accent-glow);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    /* Info */
+    .card-info { margin-bottom: calc(var(--u) * 1.1); }
+
+    .card-title {
+      font-size: calc(var(--u) * 1.25);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--text);
+      margin-bottom: calc(var(--u) * 0.3);
+    }
+
+    .card-desc {
+      font-size: calc(var(--u) * 0.82);
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* Rodapé */
+    .card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: calc(var(--u) * 0.8);
+      margin-top: auto;
+    }
+
+    .card-file {
+      display: inline-flex;
+      align-items: center;
+      gap: calc(var(--u) * 0.4);
+      font-size: calc(var(--u) * 0.72);
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      padding: calc(var(--u) * 0.28) calc(var(--u) * 0.6);
+      border-radius: calc(var(--u) * 0.5);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .pill-dot {
+      width: calc(var(--u) * 0.35);
+      height: calc(var(--u) * 0.35);
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent) 80%, transparent);
+      box-shadow: 0 0 6px var(--accent);
+      flex-shrink: 0;
+    }
+
+    .card-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: calc(var(--u) * 2.1);
+      height: calc(var(--u) * 2.1);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-dim);
+      transition: all 0.5s var(--ease-out);
+      flex-shrink: 0;
+    }
+    .card-arrow svg {
+      width: calc(var(--u) * 0.85);
+      height: calc(var(--u) * 0.85);
+    }
+    .card:hover .card-arrow {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #06070a;
+      transform: translateZ(20px) translate(2px, -2px);
+      box-shadow: 0 0 24px -4px var(--accent-glow);
+    }
+
+    /* ============================================================
+       ACENTOS MONOCROMÁTICOS
+    ============================================================ */
+    .card[data-accent="white"]  { --accent: #ffffff; --accent-soft: rgba(255, 255, 255, 0.12); --accent-glow: rgba(255, 255, 255, 0.30); }
+    .card[data-accent="silver"] { --accent: #d4d4d4; --accent-soft: rgba(212, 212, 212, 0.11); --accent-glow: rgba(212, 212, 212, 0.26); }
+    .card[data-accent="gray"]   { --accent: #a3a3a3; --accent-soft: rgba(163, 163, 163, 0.10); --accent-glow: rgba(163, 163, 163, 0.22); }
+    .card[data-accent="dim"]    { --accent: #737373; --accent-soft: rgba(115, 115, 115, 0.10); --accent-glow: rgba(115, 115, 115, 0.20); }
+
+    /* ============================================================
+       KEYFRAMES
+    ============================================================ */
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: perspective(1000px) translateY(24px) scale(0.95);
+        filter: blur(10px);
+      }
+      to {
+        opacity: 1;
+        transform: perspective(1000px) translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.3); }
+    }
+
+    @property --angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+    @keyframes spinBorder {
+      to { --angle: 360deg; }
+    }
+
+    /* ============================================================
+       RESPONSIVO / ACESSIBILIDADE
+    ============================================================ */
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (hover: none) {
+      .cursor-glow { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      .cursor-glow,
+      .bg-stars { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= BACKGROUND ================= -->
+  <div class="bg-base" aria-hidden="true"></div>
+  <div class="bg-aurora" id="aurora" aria-hidden="true">
+    <span class="blob blob-1"></span>
+    <span class="blob blob-2"></span>
+    <span class="blob blob-3"></span>
+    <span class="blob blob-4"></span>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <canvas class="bg-stars" id="stars" aria-hidden="true"></canvas>
+  <div class="bg-vignette" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="bg-noise" aria-hidden="true"></div>
+
+  <!-- ================= CARDS ================= -->
+  <main class="grid">
+
+    <!-- CARD 1 -->
+    <a class="card" href="1.html" data-accent="white">
+      <span class="card-num" aria-hidden="true">01</span>
+      <span class="card-shine" aria-hidden="true"></span>
+      <span class="card-accent" aria-hidden="true"></span>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon" aria-hidden="true">🎮</div>
+          <span class="card-dot" aria-hidden="true"></span>
+        </div>
+        <div class="card-info">
+          <h2 class="card-title">Jogo 1</h2>
+          <p class="card-desc">Primeiro projeto do repositório</p>
+        </div>
+        <div class="card-bottom">
+          <span class="card-file"><span class="pill-dot"></span>1.html</span>
+          <span class="card-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 17L17 7M9 7h8v8"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- CARD 2 -->
+    <a class="card" href="2.hmtl" data-accent="silver">
+      <span class="card-num" aria-hidden="true">02</span>
+      <span class="card-shine" aria-hidden="true"></span>
+      <span class="card-accent" aria-hidden="true"></span>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon" aria-hidden="true">🕹️</div>
+          <span class="card-dot" aria-hidden="true"></span>
+        </div>
+        <div class="card-info">
+          <h2 class="card-title">Jogo 2</h2>
+          <p class="card-desc">Segundo projeto do repositório</p>
+        </div>
+        <div class="card-bottom">
+          <span class="card-file"><span class="pill-dot"></span>2.hmtl</span>
+          <span class="card-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 17L17 7M9 7h8v8"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- CARD 3 -->
+    <a class="card" href="3.html" data-accent="gray">
+      <span class="card-num" aria-hidden="true">03</span>
+      <span class="card-shine" aria-hidden="true"></span>
+      <span class="card-accent" aria-hidden="true"></span>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon" aria-hidden="true">👾</div>
+          <span class="card-dot" aria-hidden="true"></span>
+        </div>
+        <div class="card-info">
+          <h2 class="card-title">Jogo 3</h2>
+          <p class="card-desc">Terceiro projeto do repositório</p>
+        </div>
+        <div class="card-bottom">
+          <span class="card-file"><span class="pill-dot"></span>3.html</span>
+          <span class="card-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 17L17 7M9 7h8v8"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!--
+      NOVO CARD — data-accent: white | silver | gray | dim
+    -->
+
+  </main>
+
+  <!-- OVERLAY DE TRANSIÇÃO -->
+  <div class="page-transition active" id="pageTransition" aria-hidden="true"></div>
+
+  <script>
+    /* ============================================================
+       CONFIG
+    ============================================================ */
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const overlay = document.getElementById('pageTransition');
+
+    /* ============================================================
+       0. FADE-IN AO ENTRAR
+    ============================================================ */
+    window.addEventListener('DOMContentLoaded', () => {
+      requestAnimationFrame(() => {
+        overlay.classList.remove('active');
+      });
+    });
+
+    /* ============================================================
+       1. BLOQUEIA BOTÃO DIREITO
+    ============================================================ */
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    /* ============================================================
+       2. TRANSIÇÃO SUAVE ENTRE PÁGINAS
+    ============================================================ */
+    document.querySelectorAll('a[href]').forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!href) return;
+      if (href.startsWith('http') ||
+          href.startsWith('#') ||
+          href.startsWith('mailto') ||
+          href.startsWith('tel:') ||
+          href.startsWith('javascript:') ||
+          link.target === '_blank') return;
+
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        overlay.classList.add('active');
+        setTimeout(() => {
+          window.location.href = href;
+        }, 450);
+      });
+    });
+
+    /* ============================================================
+       3. PARALLAX DA AURORA
+    ============================================================ */
+    if (!reduceMotion) {
+      const aurora = document.getElementById('aurora');
+      let tx = 0, ty = 0, cx = 0, cy = 0;
+
+      document.addEventListener('mousemove', (e) => {
+        tx = (e.clientX / innerWidth  - 0.5) * 32;
+        ty = (e.clientY / innerHeight - 0.5) * 32;
+      });
+
+      (function loop() {
+        cx += (tx - cx) * 0.05;
+        cy += (ty - cy) * 0.05;
+        aurora.style.transform = `translate(${cx}px, ${cy}px)`;
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    /* ============================================================
+       4. CURSOR GLOW COM LERP
+    ============================================================ */
+    if (!reduceMotion && matchMedia('(hover: hover)').matches) {
+      const glow = document.getElementById('cursorGlow');
+      let mx = innerWidth / 2, my = innerHeight / 2;
+      let gx = mx, gy = my;
+
+      document.addEventListener('mousemove', (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+      });
+
+      (function loop() {
+        gx += (mx - gx) * 0.08;
+        gy += (my - gy) * 0.08;
+        glow.style.transform = `translate(${gx - 350}px, ${gy - 350}px)`;
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    /* ============================================================
+       5. ESTRELAS (canvas)
+    ============================================================ */
+    (function stars() {
+      if (reduceMotion) return;
+
+      const canvas = document.getElementById('stars');
+      const ctx = canvas.getContext('2d');
+      const DPR = Math.min(devicePixelRatio || 1, 2);
+      let W = 0, H = 0, particles = [];
+
+      function init() {
+        W = innerWidth;
+        H = innerHeight;
+        canvas.width  = W * DPR;
+        canvas.height = H * DPR;
+        canvas.style.width  = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        const count = Math.min(100, Math.max(35, Math.floor((W * H) / 20000)));
+        particles = Array.from({ length: count }, () => ({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 1.5 + 0.3,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: (Math.random() - 0.5) * 0.12,
+          alpha: Math.random() * 0.5 + 0.25,
+          tw: Math.random() * Math.PI * 2,
+          twSpeed: Math.random() * 0.018 + 0.005,
+        }));
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, W, H);
+        for (const p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.tw += p.twSpeed;
+
+          if (p.x < -5) p.x = W + 5;
+          if (p.x > W + 5) p.x = -5;
+          if (p.y < -5) p.y = H + 5;
+          if (p.y > H + 5) p.y = -5;
+
+          const a = p.alpha * (0.55 + 0.45 * Math.sin(p.tw));
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
+          ctx.fill();
+        }
+        requestAnimationFrame(frame);
+      }
+
+      init();
+      frame();
+
+      let rT;
+      addEventListener('resize', () => {
+        clearTimeout(rT);
+        rT = setTimeout(init, 150);
+      });
+    })();
+
+    /* ============================================================
+       6. TILT 3D + BRILLHO RADIAL
+    ============================================================ */
+    if (!reduceMotion) {
+      document.querySelectorAll('.card').forEach((card) => {
+        card.addEventListener('mouseenter', () => {
+          card.style.transition =
+            'transform 0.12s ease-out, border-color 0.4s ease, box-shadow 0.5s ease, opacity 0.3s ease, filter 0.3s ease';
+        });
+
+        card.addEventListener('mousemove', (e) => {
+          const r = card.getBoundingClientRect();
+          const x = e.clientX - r.left;
+          const y = e.clientY - r.top;
+          const rx = ((y / r.height) - 0.5) * -8;
+          const ry = ((x / r.width)  - 0.5) *  8;
+
+          card.style.transform =
+            `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
+          card.style.setProperty('--mx', `${x}px`);
+          card.style.setProperty('--my', `${y}px`);
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transition =
+            'transform 0.7s cubic-bezier(0.23,1,0.32,1), border-color 0.4s ease, box-shadow 0.5s ease, opacity 0.3s ease, filter 0.3s ease';
+          card.style.transform =
+            'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
