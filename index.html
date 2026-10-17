@@ -28,6 +28,7 @@
        VARIÁVEIS DE TEMA (LIGHT / DARK)
     ============================================================ */
     :root {
+      /* Light Mode */
       --bg: #f4fdf6;
       --text: #111827;
       --text-dim: #6b7280;
@@ -53,8 +54,10 @@
       --radius: calc(var(--u) * 1.5);
       --radius-s: calc(var(--u) * 0.9);
       --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
+    /* Dark Mode */
     [data-theme="dark"] {
       --bg: #050505;
       --text: #f3f4f6;
@@ -76,7 +79,7 @@
     }
 
     /* Transições Globais */
-    body, .card, .hotbar, .modal-content, .bg-blob, .bg-grid-lines, .bg-watermark, .card-file, .card-icon, .hotbar-btn {
+    body, .card, .hotbar, .modal-content, .bg-blob, .bg-grid-lines, .bg-watermark, .card-file, .card-icon, .hotbar-btn, .pix-panel, .copy-btn, .close-panel {
       transition: background-color 0.6s ease, color 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
     }
 
@@ -98,7 +101,7 @@
     }
 
     /* ============================================================
-       BACKGROUND MELHORADO
+       BACKGROUND
     ============================================================ */
     body::after {
       content: "";
@@ -438,91 +441,137 @@
     }
 
     /* ============================================================
-       MODAL DO PIX
+       PAINEL DO PIX E ANIMAÇÃO
     ============================================================ */
-    .modal-overlay {
+    .pix-fly-ball {
       position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 2000;
+      background: var(--text);
+      color: var(--bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0;
+      border-radius: 999px;
+      z-index: 9999;
       pointer-events: none;
-      transition: opacity 0.3s ease;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      will-change: transform, width, height, border-radius;
     }
 
-    .modal-overlay.active {
+    .pix-fly-ball svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .pix-burst {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(74, 222, 128, 0.6) 0%, rgba(74, 222, 128, 0) 70%);
+      border: 2px solid var(--accent);
+      bottom: 20px;
+      right: 20px;
+      transform: scale(0);
       opacity: 1;
+      z-index: 9998;
+      pointer-events: none;
+      animation: burstCorner 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    @keyframes burstCorner {
+      0% { transform: scale(0); opacity: 1; }
+      50% { transform: scale(2.5); opacity: 0.8; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+
+    .pix-panel {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 300px;
+      background: var(--modal-bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 20px 40px -10px var(--shadow-color);
+      z-index: 10000;
+      opacity: 0;
+      transform: translateY(30px) scale(0.9);
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .pix-panel.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
       pointer-events: all;
     }
 
-    .modal-content {
-      background: var(--modal-bg);
-      padding: 24px;
-      border-radius: 24px;
-      width: 90%;
-      max-width: 340px;
-      text-align: center;
-      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.4);
-      transform: translateY(20px) scale(0.95);
-      transition: transform 0.4s var(--ease-out), background-color 0.6s ease;
-      position: relative;
-      color: var(--text);
+    .pix-panel h3 { font-size: 1.1rem; margin-bottom: 4px; text-align: center; color: var(--text); }
+    .pix-panel p { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px; text-align: center; line-height: 1.4; }
+
+    /* QR Code com Fundo Preto e Imagem Quadrada */
+    .qr-container {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #000000;
+      border-radius: 16px; /* Borda do fundo arredondada */
+      padding: 12px;
+      margin-bottom: 20px;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .modal-overlay.active .modal-content {
-      transform: translateY(0) scale(1);
+    .qr-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0; /* Imagem quadrada */
+      image-rendering: pixelated; /* Mantém o QR nítido */
     }
 
-    .modal-close {
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s var(--spring);
+    }
+
+    .copy-btn:hover { background: var(--accent); color: #111827; transform: scale(1.02); }
+    .copy-btn.copied { background: var(--accent); color: #111827; }
+    .copy-btn svg { width: 18px; height: 18px; }
+
+    .close-panel {
       position: absolute;
       top: 16px;
       right: 16px;
       background: var(--hotbar-hover);
       border: none;
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text);
+      color: var(--text-dim);
       transition: background 0.2s;
     }
-    .modal-close:hover { background: var(--border); }
-
-    .modal-content h3 {
-      margin-bottom: 8px;
-      font-size: 1.2rem;
-    }
-    .modal-content p {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      margin-bottom: 20px;
-    }
-    
-    .modal-qr {
-      width: 220px;
-      height: 220px;
-      margin: 0 auto;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      background: #ffffff; 
-    }
-    .modal-qr img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
+    .close-panel:hover { background: var(--border); color: var(--text); }
 
     /* ============================================================
-       TELA DE TRANSIÇÃO BRANCA E BOLHAS
+       TRANSIÇÃO DE PÁGINA (TELA BRANCA)
     ============================================================ */
     #page-transition {
       position: fixed;
@@ -549,33 +598,8 @@
       animation: burst 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
     }
 
-    /* Bolinha que voa para o Pix */
-    .pix-fly-ball {
-      position: fixed;
-      border-radius: 999px;
-      background: var(--text);
-      color: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2500;
-      pointer-events: none;
-      box-shadow: 0 10px 30px rgba(74, 222, 128, 0.4);
-      overflow: hidden;
-      font-family: inherit;
-      font-weight: 600;
-    }
-    .pix-fly-ball svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
-    .pix-fly-ball.bursting {
-      animation: pixBurstAnim 0.4s ease-out forwards;
-    }
-
     /* ============================================================
-       ANIMAÇÕES
+       KEYFRAMES
     ============================================================ */
     @keyframes cardIn {
       from { opacity: 0; transform: perspective(1000px) translateY(24px) scale(0.95); filter: blur(10px); }
@@ -599,12 +623,6 @@
       100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
     }
 
-    @keyframes pixBurstAnim {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(2); opacity: 0.8; }
-      100% { transform: scale(4); opacity: 0; }
-    }
-
     /* ============================================================
        RESPONSIVO
     ============================================================ */
@@ -614,6 +632,7 @@
       .hotbar-btn { padding: 10px 14px; font-size: 0.85rem; }
       .hotbar-btn span { display: none; }
       .hotbar-btn.primary span { display: block; }
+      .pix-panel { width: calc(100% - 32px); bottom: 16px; right: 16px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -717,19 +736,22 @@
     </button>
   </nav>
 
-  <!-- MODAL DO PIX -->
-  <div class="modal-overlay" id="pixModal">
-    <div class="modal-content">
-      <button class="modal-close" id="closePix">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
-      <h3>Apoie o projeto!</h3>
-      <p>Escaneie o QR Code no seu banco. Obrigado! 💚</p>
-      <div class="modal-qr">
-        <!-- COLOQUE A SUA IMAGEM DO QR CODE AQUI E RENOMEIE PARA qrcode.png -->
-        <img src="qrcode.png" alt="QR Code Pix" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=exemplo-de-pix-aqui'">
-      </div>
+  <!-- PAINEL DO PIX -->
+  <div class="pix-panel" id="pixPanel">
+    <button class="close-panel" id="closePix">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <h3>Apoie o projeto! 💚</h3>
+    <p>Escaneie o QR Code ou copie o link do Nubank.</p>
+    
+    <div class="qr-container">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://nubank.com.br/cobrar/7c4vss/6ab88395-e755-4bbb-9c16-ff01f8317d6e" alt="QR Code Pix">
     </div>
+    
+    <button class="copy-btn" id="copyPixBtn">
+      <svg id="copyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      <span id="copyText">Copiar link do Nubank</span>
+    </button>
   </div>
 
   <script>
@@ -769,82 +791,122 @@
 
     /* 3. EFEITO DO PIX (BOLA VOANDO) */
     const pixBtn = document.getElementById('pixBtn');
-    const pixModal = document.getElementById('pixModal');
+    const pixPanel = document.getElementById('pixPanel');
     const closePix = document.getElementById('closePix');
-    const hotbar = document.getElementById('mainHotbar');
+    const copyPixBtn = document.getElementById('copyPixBtn');
+    const copyText = document.getElementById('copyText');
+    const copyIcon = document.getElementById('copyIcon');
+
+    const nubankLink = "https://nubank.com.br/cobrar/7c4vss/6ab88395-e755-4bbb-9c16-ff01f8317d6e";
 
     pixBtn.addEventListener('click', (e) => {
       e.preventDefault();
       
-      // Pega as coordenadas exatas do botão
       const rect = pixBtn.getBoundingClientRect();
       const startX = rect.left;
       const startY = rect.top;
-      const width = rect.width;
-      const height = rect.height;
+      const startWidth = rect.width;
+      const startHeight = rect.height;
+      
+      pixBtn.style.opacity = '0';
+      pixBtn.style.pointerEvents = 'none';
 
-      // Cria a bolinha clone
       const ball = document.createElement('div');
       ball.className = 'pix-fly-ball';
       ball.style.left = `${startX}px`;
       ball.style.top = `${startY}px`;
-      ball.style.width = `${width}px`;
-      ball.style.height = `${height}px`;
-      
-      // Copia o ícone do botão para a bolinha
-      const iconSvg = pixBtn.querySelector('svg').outerHTML;
-      ball.innerHTML = iconSvg;
-
+      ball.style.width = `${startWidth}px`;
+      ball.style.height = `${startHeight}px`;
+      ball.innerHTML = pixBtn.querySelector('svg').outerHTML;
       document.body.appendChild(ball);
-      
-      // Esconde o botão original
-      pixBtn.style.opacity = '0';
-      pixBtn.style.pointerEvents = 'none';
 
-      // Calcula a posição central da tela (onde o modal vai aparecer)
-      const targetX = (window.innerWidth / 2) - (width / 2);
-      const targetY = (window.innerHeight / 2) - (height / 2);
+      const targetX = window.innerWidth - 24 - 25; 
+      const targetY = window.innerHeight - 24 - 25;
 
-      // Anima a bolinha usando Web Animations API
-      const animation = ball.animate([
-        { 
-          transform: 'translate(0, 0) scale(1)', 
-          borderRadius: '999px',
-          backgroundColor: 'var(--text)'
-        },
-        { 
-          transform: `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.3)`, 
-          borderRadius: '50%',
-          backgroundColor: 'var(--accent)'
-        }
+      // FASE 1: Antecipação (bem sutil)
+      const anticipateAnim = ball.animate([
+        { transform: 'scale(1)' },
+        { transform: 'scale(0.95)' }
       ], {
-        duration: 500,
-        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', // Efeito elástico
+        duration: 150,
+        easing: 'ease-in',
         fill: 'forwards'
       });
 
-      // Quando a animação terminar, faz a bolinha estourar e mostra o modal
-      animation.onfinish = () => {
-        ball.classList.add('bursting');
-        
-        setTimeout(() => {
-          ball.remove();
-          pixModal.classList.add('active');
-          
-          // Restaura o botão invisivelmente (para quando o modal fechar)
-          setTimeout(() => {
-            pixBtn.style.opacity = '1';
-            pixBtn.style.pointerEvents = 'auto';
-          }, 300);
-          
-        }, 350); // Tempo do estouro da bolinha
+      anticipateAnim.onfinish = () => {
+        // FASE 2: Encolhimento
+        const shrinkAnim = ball.animate([
+          { width: `${startWidth}px`, height: `${startHeight}px`, borderRadius: '999px', transform: 'scale(0.95)' },
+          { width: `${startHeight}px`, height: `${startHeight}px`, borderRadius: '50%', transform: 'scale(1.02)' }
+        ], {
+          duration: 400,
+          easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+          fill: 'forwards'
+        });
+
+        shrinkAnim.onfinish = () => {
+          ball.style.width = `${startHeight}px`;
+          ball.style.height = `${startHeight}px`;
+          ball.style.borderRadius = '50%';
+
+          const deltaX = targetX - startX;
+          const deltaY = targetY - startY;
+          const arcHeight = window.innerHeight * 0.35; // Arco mais alto
+
+          // FASE 3: Voo Super Fluido
+          const flyAnim = ball.animate([
+            { transform: `translate(0, 0) scale(1)` },
+            { transform: `translate(${deltaX * 0.2}px, ${-arcHeight * 0.6}px) scale(1.1)`, offset: 0.25 },
+            { transform: `translate(${deltaX * 0.5}px, ${-arcHeight}px) scale(1.05)`, offset: 0.5 },
+            { transform: `translate(${deltaX * 0.85}px, ${deltaY * 0.8}px) scale(0.95)`, offset: 0.8 },
+            { transform: `translate(${deltaX}px, ${deltaY}px) scale(1)` }
+          ], {
+            duration: 1400, // Bem mais suave
+            easing: 'cubic-bezier(0.25, 1, 0.5, 1)', // Aceleração natural
+            fill: 'forwards'
+          });
+
+          flyAnim.onfinish = () => {
+            ball.remove();
+            
+            const burst = document.createElement('div');
+            burst.className = 'pix-burst';
+            document.body.appendChild(burst);
+
+            setTimeout(() => {
+              burst.remove();
+              pixPanel.classList.add('active');
+            }, 250); 
+          };
+        };
       };
     });
 
-    // Fecha o modal
-    closePix.addEventListener('click', () => pixModal.classList.remove('active'));
-    pixModal.addEventListener('click', (e) => {
-      if (e.target === pixModal) pixModal.classList.remove('active');
+    // Fechar painel
+    closePix.addEventListener('click', () => {
+      pixPanel.classList.remove('active');
+      setTimeout(() => {
+        pixBtn.style.opacity = '1';
+        pixBtn.style.pointerEvents = 'auto';
+      }, 400);
+    });
+
+    // Copiar Link
+    copyPixBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(nubankLink);
+        copyText.innerText = "Copiado com sucesso!";
+        copyPixBtn.classList.add('copied');
+        copyIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+
+        setTimeout(() => {
+          copyText.innerText = "Copiar link do Nubank";
+          copyPixBtn.classList.remove('copied');
+          copyIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>';
+        }, 2500);
+      } catch (err) {
+        alert("Erro ao copiar.");
+      }
     });
 
     /* 4. EFEITO DE ESTOURO DE BOLHA + TRANSIÇÃO BRANCA (Cards) */
@@ -859,7 +921,6 @@
         const x = e.clientX || (rect.left + rect.width / 2);
         const y = e.clientY || (rect.top + rect.height / 2);
 
-        // Cria a bolha
         const bubble = document.createElement('div');
         bubble.className = 'bubble-burst';
         bubble.style.left = x + 'px';
@@ -868,15 +929,12 @@
         bubble.style.height = '100px';
         document.body.appendChild(bubble);
 
-        // Faz o card sumir
         this.classList.add('clicked');
 
-        // Tela branca
         setTimeout(() => {
           transitionScreen.classList.add('active');
         }, 200);
 
-        // Navega
         setTimeout(() => {
           window.location.href = href;
         }, 700);
