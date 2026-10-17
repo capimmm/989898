@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>eo jogo</title>
+<style>
+  :root{
+    --ink:#0b0b0c;
+    --paper:#ffffff;
+    --sweep:cubic-bezier(.76,0,.24,1);
+    --spring:cubic-bezier(.34,1.56,.64,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+
+  .scene{
+    position:fixed; inset:0;
+    overflow:hidden;
+    background:var(--paper);
+    cursor:pointer;
+  }
+
+  /* ---------------- INTRO ---------------- */
+  .intro{
+    position:absolute; inset:0;
+    display:grid; place-items:center;
+    z-index:10;
+    will-change:opacity,transform;
+  }
+
+  .cue{
+    display:inline-flex;
+    align-items:center;
+    gap:.65rem;
+    padding:1.1rem 1.5rem;
+    border:0;
+    background:none;
+    font:inherit;
+    font-size:.7rem;
+    font-weight:500;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:#a6a6ad;
+    cursor:pointer;
+    transition:color .45s ease, letter-spacing .45s ease;
+  }
+  .cue:hover{ color:var(--ink); letter-spacing:.38em }
+  .cue:focus-visible{
+    outline:2px solid var(--ink);
+    outline-offset:8px;
+    border-radius:999px;
+  }
+
+  .cue-dot{
+    position:relative;
+    width:5px; height:5px;
+    border-radius:50%;
+    background:currentColor;
+    flex:none;
+  }
+  .cue-dot::after{
+    content:"";
+    position:absolute; inset:-5px;
+    border-radius:50%;
+    border:1px solid currentColor;
+    animation:ping 2.6s ease-out infinite;
+  }
+  @keyframes ping{
+    0%       { transform:scale(.5); opacity:.55 }
+    70%,100% { transform:scale(2.1); opacity:0 }
+  }
+
+  /* ---------------- CENA FINAL ---------------- */
+  .final{
+    position:absolute; inset:0;
+    display:grid; place-items:center;
+    background:#08080a;
+    opacity:0;
+    overflow:hidden;
+    will-change:opacity;
+  }
+
+  .glow{
+    position:absolute;
+    left:50%; top:50%;
+    width:130vmax; height:130vmax;
+    margin:-65vmax 0 0 -65vmax;
+    background:radial-gradient(circle,
+      rgba(255,186,102,.17) 0%,
+      rgba(255,120,70,.07) 30%,
+      rgba(255,120,70,0) 62%);
+    opacity:0;
+    pointer-events:none;
+    will-change:transform,opacity;
+  }
+
+  .final-inner{
+    position:relative;
+    z-index:1;
+    display:grid;
+    justify-items:center;
+    gap:2.4rem;
+  }
+
+  .title{
+    display:flex;
+    font-size:clamp(3rem,15vw,10rem);
+    font-weight:800;
+    line-height:.92;
+    letter-spacing:-.05em;
+    color:#f6f3ee;
+    white-space:nowrap;
+    user-select:none;
+  }
+
+  .title .l{
+    display:inline-block;
+    opacity:0;
+    will-change:transform,opacity,filter;
+  }
+
+  .hint{
+    font-size:.68rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:rgba(246,243,238,.32);
+    opacity:0;
+    pointer-events:none;
+  }
+
+  /* ---------------- STRIPS ---------------- */
+  .strips{
+    position:absolute; inset:0;
+    display:flex;
+    z-index:5;
+    pointer-events:none;
+  }
+
+  .strip{
+    flex:1 1 0;
+    background:#0b0b0c;
+    box-shadow:0 0 0 1px #0b0b0c; /* mata as emendas */
+    transform:translateY(-102%);
+    will-change:transform;
+  }
+
+  .sr{
+    position:absolute;
+    width:1px; height:1px;
+    overflow:hidden;
+    clip:rect(0 0 0 0);
+    white-space:nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .cue-dot::after{ animation:none }
+  }
+</style>
+</head>
+<body>
+
+<main class="scene" id="scene">
+
+  <div class="final" id="final">
+    <div class="glow" id="glow" aria-hidden="true"></div>
+    <div class="final-inner">
+      <h1 class="title" id="title" aria-hidden="true"></h1>
+      <p class="hint" id="hint">clique para repetir</p>
+    </div>
+  </div>
+
+  <div class="strips" id="strips" aria-hidden="true"></div>
+
+  <div class="intro" id="intro">
+    <button class="cue" id="cue" type="button">
+      <span class="cue-dot" aria-hidden="true"></span>
+      <span>clique</span>
+    </button>
+  </div>
+
+</main>
+
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(() => {
+  const scene  = document.getElementById('scene');
+  const stripsEl = document.getElementById('strips');
+  const finalEl  = document.getElementById('final');
+  const title    = document.getElementById('title');
+  const hint     = document.getElementById('hint');
+  const glow     = document.getElementById('glow');
+  const intro    = document.getElementById('intro');
+  const live     = document.getElementById('live');
+
+  const WORD   = 'eo jogo';
+  const N      = 10;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- monta as strips ---------- */
+  const strips = [];
+  for (let i = 0; i < N; i++) {
+    const s = document.createElement('div');
+    s.className = 'strip';
+    stripsEl.appendChild(s);
+    strips.push(s);
+  }
+
+  /* ---------- monta as letras ---------- */
+  [...WORD].forEach(ch => {
+    const s = document.createElement('span');
+    s.className = 'l';
+    s.textContent = ch === ' ' ? '\u00A0' : ch;
+    title.appendChild(s);
+  });
+  const letters = [...title.children];
+
+  /* ---------- helpers ---------- */
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  function anim(el, frames, opts) {
+    const a = el.animate(frames, opts);
+    a.finished.catch(() => {});
+    return a.finished;
+  }
+
+  function clearAnims(el) {
+    el.getAnimations().forEach(a => a.cancel());
+  }
+
+  let state = 'idle'; // idle | busy | done
+
+  /* ---------- sequência principal ---------- */
+  async function play(x, y) {
+    if (state !== 'idle') return;
+    state = 'busy';
+
+    const DUR  = reduce ? 200 : 620;
+    const STAG = reduce ? 0   : 38;
+    const EASE = 'cubic-bezier(.76,0,.24,1)';
+
+    const w = scene.clientWidth || innerWidth;
+    const origin = Math.max(0, Math.min(N - 1, Math.floor((x / w) * N)));
+
+    /* 1 — o convite some */
+    anim(intro, [
+      { opacity: 1, transform: 'scale(1)' },
+      { opacity: 0, transform: 'scale(.96)' }
+    ], { duration: reduce ? 180 : 420, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
+
+    await wait(reduce ? 120 : 320);
+
+    /* 2 — strips descem em onda a partir do clique */
+    let maxDelay = 0;
+    strips.forEach((s, i) => {
+      const d = Math.abs(i - origin) * STAG;
+      maxDelay = Math.max(maxDelay, d);
+      anim(s, [
+        { transform: 'translateY(-102%)' },
+        { transform: 'translateY(0)' }
+      ], { duration: DUR, delay: d, easing: EASE, fill: 'backwards' });
+      s.style.transform = 'translateY(0)';
+    });
+
+    await wait(DUR + maxDelay + 90);
+
+    /* 3 — tela coberta: prepara a cena final */
+    finalEl.style.opacity = '1';
+    await wait(180);
+
+    /* 4 — strips continuam a viagem e saem por baixo */
+    strips.forEach((s, i) => {
+      const d = Math.abs(i - origin) * STAG;
+      anim(s, [
+        { transform: 'translateY(0)' },
+        { transform: 'translateY(102%)' }
+      ], { duration: DUR * .92, delay: d, easing: EASE, fill: 'forwards' });
+    });
+
+    /* 5 — o brilho nasce junto com a revelação */
+    anim(glow, [
+      { opacity: 0, transform: 'translate(-50%,-50%) scale(.55)' },
+      { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }
+    ], { duration: reduce ? 300 : 1600, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
+
+    await wait(reduce ? 0 : 240);
+
+    /* 6 — as letras saltam */
+    letters.forEach((l, i) => {
+      anim(l, [
+        { opacity: 0, transform: 'translateY(.5em) scale(.82)', filter: 'blur(16px)' },
+        { opacity: 1, transform: 'translateY(0) scale(1)',      filter: 'blur(0px)'  }
+      ], {
+        duration: reduce ? 260 : 860,
+        delay: i * (reduce ? 0 : 62),
+        easing: 'cubic-bezier(.34,1.56,.64,1)',
+        fill: 'forwards'
+      });
+    });
+
+    await wait(letters.length * (reduce ? 0 : 62) + 640);
+
+    /* 7 — dica */
+    anim(hint, [
+      { opacity: 0, transform: 'translateY(6px)' },
+      { opacity: 1, transform: 'translateY(0)'   }
+    ], { duration: 700, easing: 'ease', fill: 'forwards' });
+
+    live.textContent = 'eo jogo';
+    state = 'done';
+  }
+
+  /* ---------- reset ---------- */
+  async function reset() {
+    state = 'busy';
+
+    clearAnims(hint);
+    clearAnims(glow);
+
+    anim(finalEl, [
+      { opacity: 1 },
+      { opacity: 0 }
+    ], { duration: 340, easing: 'ease', fill: 'forwards' });
+
+    await wait(360);
+
+    /* tudo invisível agora — dá pra resetar sem ver */
+    finalEl.style.opacity = '0';
+    clearAnims(finalEl);
+
+    letters.forEach(clearAnims);
+    hint.style.opacity = '0';
+    glow.style.opacity = '0';
+
+    strips.forEach(s => {
+      clearAnims(s);
+      s.style.transform = 'translateY(-102%)';
+    });
+
+    intro.style.opacity = '0';
+    clearAnims(intro);
+    anim(intro, [
+      { opacity: 0, transform: 'scale(.96)' },
+      { opacity: 1, transform: 'scale(1)'   }
+    ], { duration: 420, easing: 'ease', fill: 'forwards' });
+
+    live.textContent = '';
+    await wait(140);
+    state = 'idle';
+  }
+
+  /* ---------- replay ---------- */
+  async function replay(x, y) {
+    if (state !== 'done') return;
+    await reset();
+    play(x, y);
+  }
+
+  /* ---------- cliques ---------- */
+  function pointFrom(e) {
+    const keyboard = e.detail === 0 || (!e.clientX && !e.clientY);
+    if (keyboard) {
+      return {
+        x: (scene.clientWidth  || innerWidth)  / 2,
+        y: (scene.clientHeight || innerHeight) / 2
+      };
+    }
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  scene.addEventListener('click', (e) => {
+    if (state === 'idle' || state === 'done') {
+      const { x, y } = pointFrom(e);
+      if (state === 'idle') play(x, y);
+      else replay(x, y);
+    }
+  });
+
+  scene.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state === 'done') reset();
+  });
+})();
+</script>
+</body>
+</html>
